@@ -1,74 +1,61 @@
 # Smart_Disaster_Resilient_Tech_Habitat-SDRTH-
-#include <DHT.h>
+PHASE-01
+🌱 Smart Agriculture Monitor with Arduino UNO & NodeMCU
+This project is a Smart Agriculture Monitoring System built using Arduino UNO, NodeMCU (ESP8266), and several sensors. It helps monitor soil moisture, temperature, and humidity, and provides visual and sound alerts using an RGB LED and buzzer.
 
-#define DHTPIN 2
-#define DHTTYPE DHT11
-DHT dht(DHTPIN, DHTTYPE);
+📦 Components Used
+Arduino UNO
 
-const int buttonPin = 7;
-const int buzzerPin = 8;
-const int redPin = 5;     // PWM
-const int greenPin = 6;   // PWM
-const int bluePin = 3;    // PWM
-const int soilMoisturePin = A0;
+NodeMCU ESP8266
 
-const int dryThreshold = 600;
+Soil Moisture Sensor
 
-void setup() {
-  Serial.begin(9600);
-  dht.begin();
+DHT11 Temperature & Humidity Sensor
 
-  pinMode(buttonPin, INPUT_PULLUP);
-  pinMode(buzzerPin, OUTPUT);
+RGB LED (Common Anode)
 
-  pinMode(redPin, OUTPUT);
-  pinMode(greenPin, OUTPUT);
-  pinMode(bluePin, OUTPUT);
+Buzzer
 
-  setColor(0, 0, 0);
-}
+Push Button
 
-void loop() {
-  int soilMoisture = analogRead(soilMoisturePin);
-  float temp = dht.readTemperature();
-  float hum = dht.readHumidity();
+Jumper Wires & Breadboard
 
-  Serial.print("Soil Moisture: ");
-  Serial.println(soilMoisture);
+🔧 Features
+Soil Moisture Monitoring: Alerts when the soil is dry
 
-  Serial.print("Temperature: ");
-  Serial.print(temp);
-  Serial.println(" °C");
+Temperature & Humidity Display: Real-time readings from DHT11
 
-  Serial.print("Humidity: ");
-  Serial.print(hum);
-  Serial.println(" %");
+RGB LED Indicators:
 
-  Serial.println("---------------------------");
+🔴 Red – Soil too dry
 
-  // Soil moisture check
-  if (soilMoisture > dryThreshold) {
-    digitalWrite(buzzerPin, HIGH);
-    setColor(255, 0, 0); // Red
-  } else {
-    digitalWrite(buzzerPin, LOW);
-    setColor(0, 255, 0); // Green
-  }
+🟢 Green – Soil is good
 
-  // Button check (active LOW)
-  if (digitalRead(buttonPin) == LOW) {
-    digitalWrite(buzzerPin, HIGH);
-    setColor(0, 0, 255); // Blue
-    delay(300);
-    digitalWrite(buzzerPin, LOW);
-  }
+🔵 Blue – Manual alert via button
 
-  delay(2000);
-}
+Buzzer Alert: Sounds when soil is dry or button is pressed
 
-void setColor(int r, int g, int b) {
-  // For common anode, invert values
-  analogWrite(redPin, 255 - r);
-  analogWrite(greenPin, 255 - g);
-  analogWrite(bluePin, 255 - b);
-}
+Serial Output: All sensor values printed via Serial Monitor
+
+ESP8266 TX/RX Setup: Communication-ready (for future IoT integration)
+
+📋 Functional Logic
+Condition	Buzzer	RGB LED
+Soil too dry	ON	Red
+Soil moisture is fine	OFF	Green
+Button is pressed	Beep	Blue
+
+🛠 Setup Notes
+Common Anode RGB LED is used. Color values are inverted in code using 255 - value logic.
+
+Do not connect TX/RX lines between NodeMCU and Arduino while uploading code – disconnect them first to avoid upload errors.
+
+📁 File Contents
+smart_agriculture.ino – Main Arduino sketch
+
+README.md – Project overview and setup
+
+🚀 Future Scope
+ESP8266 integration for cloud-based IoT monitoring
+
+Data logging on a web server or mobile app
