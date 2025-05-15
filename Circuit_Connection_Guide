@@ -1,0 +1,13 @@
+✅ Components in Your System Of Phase- 1
+Component	Arduino Pin
+Push Button	D7
+Buzzer	D8
+RGB LED - Red	D5 (PWM)
+RGB LED - Green	D6 (PWM)
+RGB LED - Blue	D3 (PWM)
+DHT11 (Temp/Humidity)	D2
+Soil Moisture Sensor	A0
+NodeMCU TX → UNO RX	D0 (via voltage divider)
+NodeMCU RX ← UNO TX	D1
+
+⚠️ Note: Disconnect D0 and D1 (TX/RX) before uploading the sketch.
