@@ -1,0 +1,16 @@
+NOTE:- Check First Your RGB is Common Anode or Common Cathode.
+##IF Your RGB have Common Anode.
+LED Color	Arduino Pin	Connection
+Red	D5 (PWM)	Through resistor to Red leg
+Green	D6 (PWM)	Through resistor to Green leg
+Blue	D3 (PWM)	Through resistor to Blue leg
+Common (Anode)	+5V	Connect to Arduino 5V pin
+
+##IF Your RGB have Common Cathode.
+LED Color	Arduino Pin	Connection
+Red	D5 (PWM)	Through resistor to Red leg
+Green	D6 (PWM)	Through resistor to Green leg
+Blue	D3 (PWM)	Through resistor to Blue leg
+Common (Cathode)	  Connect to Arduino GND pin
+
+Use 220–330Ω resistors between each LED leg and Arduino pin.
