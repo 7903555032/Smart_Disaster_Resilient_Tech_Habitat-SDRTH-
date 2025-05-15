@@ -1,0 +1,122 @@
+#include <DHT.h>
+#include <Servo.h>
+
+// FOR FIRE SYSTEM
+// Pin Definitions
+const int gasSensorPin = A1;
+const int flameSensorPin = 4;
+const int buzzerPin = 8;
+const int redLedPin = 13;
+const int servoPin = 9;
+
+// Thresholds
+const int gasThreshold = 100;      // Adjust based on your gas sensor
+const int flameDetected = LOW;
+Servo myServo;
+// FIRE SYSTEM
+
+#define DHTPIN 2
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+const int buttonPin = 7;
+const int buzzerPins = 8;
+const int redPin = 5;
+const int greenPin = 6;
+const int bluePin = 3;
+
+const int soilMoisturePin = A0;
+const int dryThreshold = 600;
+
+void setup() {
+
+  Serial.begin(9600);
+  dht.begin();
+  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
+  setColor(0, 0, 0); // OFF
+
+  // FOR FIRE SYSTEM
+  pinMode(flameSensorPin, INPUT);
+  pinMode(buzzerPins, OUTPUT);
+  pinMode(redLedPin, OUTPUT);
+
+  myServo.attach(servoPin);
+  myServo.write(0); // Initial position
+
+  Serial.begin(9600);
+  Serial.println("System Initialized. Monitoring...");
+  // FOR FIRE SYSTEM
+}
+
+void loop() {
+  int soilMoisture = analogRead(soilMoisturePin);
+  float temp = dht.readTemperature();
+  float hum = dht.readHumidity();
+
+  if (isnan(temp) || isnan(hum)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+
+  Serial.print("SM:"); Serial.print(soilMoisture);
+  Serial.print("T:"); Serial.print(temp);
+  Serial.print("H:"); Serial.println(hum);
+
+  if (soilMoisture > dryThreshold) {
+    digitalWrite(buzzerPin, HIGH);   // Buzzer ON
+    setColor(255, 0, 0);             // RGB RED
+  } else {
+    digitalWrite(buzzerPin, LOW);    // Buzzer OFF
+    setColor(0, 255, 0);             // RGB GREEN
+  }
+
+  if (digitalRead(buttonPin) == LOW) {
+    digitalWrite(buzzerPin, HIGH);
+    setColor(0, 0, 255);             // RGB BLUE
+    delay(300);
+    digitalWrite(buzzerPin, LOW);
+  }
+
+  delay(2000);
+
+  // FOR FIRE SYSTEM
+   int gasValue = analogRead(gasSensorPin);
+  int flameValue = digitalRead(flameSensorPin);
+
+  Serial.print("Gas Sensor: ");
+  Serial.print(gasValue);
+  Serial.print(" | Flame Sensor: ");
+  Serial.println(flameValue == LOW ? "🔥 Detected" : "✅ Safe");
+
+  if (gasValue > gasThreshold && flameValue == flameDetected) {
+    digitalWrite(redLedPin, HIGH);
+    digitalWrite(buzzerPins, HIGH);
+    
+    for (int pos = 0; pos <= 90; pos += 5) {
+      myServo.write(pos);
+      delay(10);
+    }
+    for (int pos = 90; pos >= 0; pos -= 5) {
+      myServo.write(pos);
+      delay(10);
+    }
+
+  } else {
+    digitalWrite(redLedPin, LOW);
+    digitalWrite(buzzerPins, LOW);
+    myServo.write(0);
+  }
+
+  delay(10);
+  // FOR FIRE SYSTEM
+}
+
+void setColor(int r, int g, int b) {
+  analogWrite(redPin, 255 - r);
+  analogWrite(greenPin, 255 - g);
+  analogWrite(bluePin, 255 - b);
+}
