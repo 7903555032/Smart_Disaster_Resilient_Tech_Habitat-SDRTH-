@@ -1,0 +1,227 @@
+// CODE
+
+#define BLYNK_TEMPLATE_ID "TMPL3pByxJS0L"
+#define BLYNK_TEMPLATE_NAME "Lock System"
+#define BLYNK_AUTH_TOKEN "f4BrQaRdeXZIqicX1OKNzTTVzaACmcck"
+
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+#include <Keypad.h>
+#include <Servo.h>
+
+// WiFi credentials (Mobile Hotspot)
+char ssid[] = "IOTWifi";
+char pass[] = "9199011445";
+
+// Pins
+#define SERVO_PIN D8
+#define GREEN_LED_PIN D0
+#define RED_LED_PIN D3
+
+// Password system
+const String password = "1122";
+String input = "";
+
+Servo doorServo;
+bool doorOpen = false;
+unsigned long doorOpenTime = 0;
+
+// Keypad configuration
+const byte ROWS = 4;
+const byte COLS = 3;
+
+char keys[ROWS][COLS] = {
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'*','0','#'}
+};
+
+byte rowPins[ROWS] = {D5, D6, D7, D4};
+byte colPins[COLS] = {D1, D2, D9};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+void setup() {
+  Serial.begin(9600);
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+
+  doorServo.attach(SERVO_PIN);
+  pinMode(GREEN_LED_PIN, OUTPUT);
+  pinMode(RED_LED_PIN, OUTPUT);
+
+  digitalWrite(GREEN_LED_PIN, LOW);
+  digitalWrite(RED_LED_PIN, LOW);
+
+  closeDoor();
+
+  Serial.println("System Ready: Enter Password...");
+}
+
+void loop() {
+  Blynk.run();
+
+  char key = keypad.getKey();
+
+  if (key) {
+    Serial.print("Key Detected: ");
+    Serial.println(key);
+
+    if (key == '#') {
+      if (input == password) {
+        Serial.println("Correct Password!");
+        openDoor();
+        digitalWrite(GREEN_LED_PIN, HIGH);
+        digitalWrite(RED_LED_PIN, LOW);
+        doorOpenTime = millis();
+      } else {
+        Serial.println("Wrong Password!");
+        digitalWrite(RED_LED_PIN, HIGH);
+        digitalWrite(GREEN_LED_PIN, LOW);
+        delay(2000);
+        digitalWrite(RED_LED_PIN, LOW);
+      }
+      input = "";
+    } else if (key == '*') {
+      input = "";
+      Serial.println("Input Cleared");
+    } else {
+      input += key;
+    }
+  }
+
+  if (doorOpen && millis() - doorOpenTime >= 5000) {
+    closeDoor();
+    digitalWrite(GREEN_LED_PIN, LOW);
+  }
+}
+
+// Blynk button on V0: Open Door remotely for 5 seconds
+BLYNK_WRITE(V0) {
+  int doorState = param.asInt();
+  if (doorState == 1) {
+    openDoor();
+    Blynk.virtualWrite(V0, 0);  // Reset the button state in the app
+    delay(5000);
+    closeDoor();
+  }
+}
+
+// Blynk switch for Green LED on V1
+BLYNK_WRITE(V1) {
+  int state = param.asInt();
+  digitalWrite(GREEN_LED_PIN, state);
+}
+
+// Blynk switch for Red LED on V2
+BLYNK_WRITE(V2) {
+  int state = param.asInt();
+  digitalWrite(RED_LED_PIN, state);
+}
+
+void openDoor() {
+  doorServo.write(180);
+  doorOpen = true;
+  Serial.println("Door Opened.");
+}
+
+void closeDoor() {
+  doorServo.write(0);
+  doorOpen = false;
+  Serial.println("Door Closed.");
+}
+
+//Description
+# 🔐 Smart Lock System with Keypad & Blynk Integration
+
+This project is a smart door lock system using an ESP8266 microcontroller that combines **physical keypad access** with **remote control via Blynk IoT platform**. It allows secure access through a 4-digit password and gives users the ability to unlock the door remotely, monitor the lock status, and control indicator LEDs from their smartphone.
+
+---
+
+## 🚀 Features
+
+- 🔢 **4x3 Keypad Access** – Enter a 4-digit password to unlock the door
+- 📱 **Blynk IoT Integration** – Control and monitor the system from anywhere
+- 🔓 **Remote Door Unlock** – One-tap unlock via smartphone (opens for 5 seconds)
+- 🚨 **Wrong Password Indicator** – Red LED flashes on incorrect password
+- ✅ **Correct Password Indicator** – Green LED lights up on correct password
+- 💡 **LED Controls** – Turn red and green LEDs on/off manually via app switches
+- 📡 **Wi-Fi Controlled via Hotspot** – Easily connect using your phone hotspot
+
+---
+
+## 🧰 Hardware Used
+
+- ESP8266 NodeMCU
+- 4x3 Matrix Keypad
+- SG90 Servo Motor
+- Red and Green LEDs
+- Jumper Wires
+- Breadboard (optional)
+
+---
+
+## 🔌 Pin Configuration
+
+| Component     | ESP8266 Pin |
+|---------------|-------------|
+| Servo Motor   | D8          |
+| Green LED     | D0          |
+| Red LED       | D3          |
+| Keypad Rows   | D5, D6, D7, D4 |
+| Keypad Cols   | D1, D2, D9   |
+
+---
+
+## 🛠️ Installation & Setup
+
+1. **Clone the Repo:**
+   ```bash
+   git clone https://github.com/yourusername/smart-lock-blynk.git
+   cd smart-lock-blynk
+
+
+//Further Details
+
+Install Required Libraries:
+
+Keypad by Mark Stanley & Alexander Brevig
+
+Servo by Michael Margolis
+
+Blynk (Blynk v1 library)
+
+ESP8266WiFi
+
+Update Your Credentials:
+
+Replace ssid and pass in the code with your hotspot name and password.
+
+Use your Blynk TEMPLATE_ID, TEMPLATE_NAME, and AUTH_TOKEN.
+
+Upload the Code:
+
+Use the Arduino IDE with ESP8266 board selected.
+
+Configure Blynk Dashboard:
+
+Add a Button (V0) – Label: Open Door
+
+Add Switches for:
+
+V1 – Green LED
+
+V2 – Red LED
+
+📱 Blynk App Setup
+Widget	Virtual Pin	Mode	Purpose
+Button	V0	Switch	Open Door
+Switch	V1	Switch	Green LED
+Switch	V2	Switch	Red LED
+
+⏱️ Behavior
+Correct Password or Blynk Button Press → Door opens (servo rotates to 180°), then closes automatically after 5 seconds.
+
+Wrong Password → Red LED lights up for 2 seconds.
+
+Manual LED Control through Blynk app via switches.
